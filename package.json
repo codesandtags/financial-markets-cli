@@ -1,0 +1,26 @@
+{
+  "name": "financial-markets-cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "cli",
+    "stock",
+    "market",
+    "finance"
+  ],
+  "author": "codesandtags",
+  "license": "ISC",
+  "description": "A CLI tool to get stock or markets information from the terminal.",
+  "dependencies": {
+    "yahoo-finance2": "^2.13.2",
+    "yargs": "^17.7.2"
+  },
+  "bin": {
+    "fm": "index.js"
+  },
+  "type": "module"
+}
