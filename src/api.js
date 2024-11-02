@@ -10,6 +10,9 @@ yahooFinance.setGlobalConfig({
   },
 });
 
+const DB_PATH = new URL("../db.json", import.meta.url).pathname;
+const ENCODING = "utf-8";
+
 /**
  * Fetches stock information for a given symbol.
  * @param {string} symbol - The stock symbol to fetch information for.
@@ -21,6 +24,7 @@ export const getStockInformation = async (symbol) => {
 
     return {
       symbol: data.symbol,
+      shortName: data.shortName,
       price: data.regularMarketPrice,
       currency: data.currency,
       quoteSourceName: data.quoteSourceName,
@@ -38,16 +42,37 @@ export const getStockInformation = async (symbol) => {
  */
 export const saveStock = async (symbol) => {
   try {
-    const data = await fs.readFile("db.json", "utf-8");
+    const data = await fs.readFile(DB_PATH, ENCODING);
     const watchlist = JSON.parse(data || "[]");
 
     if (!watchlist.includes(symbol)) {
       watchlist.push(symbol);
     }
 
-    await fs.writeFile("db.json", JSON.stringify(watchlist));
+    await fs.writeFile(DB_PATH, JSON.stringify(watchlist));
   } catch (error) {
     console.error(`Error saving stock to watchlist: ${error.message}`);
+  }
+};
+
+/**
+ * Removes a stock symbol from the watchlist.
+ * @param {string} symbol - The stock symbol to remove.
+ * @returns {Promise<void>}
+ */
+export const removeStock = async (symbol) => {
+  try {
+    const data = await fs.readFile(DB_PATH, ENCODING);
+    const watchlist = JSON.parse(data || "[]");
+
+    const index = watchlist.indexOf(symbol);
+    if (index !== -1) {
+      watchlist.splice(index, 1);
+    }
+
+    await fs.writeFile(DB_PATH, JSON.stringify(watchlist));
+  } catch (error) {
+    console.error(`Error removing stock from watchlist: ${error.message}`);
   }
 };
 
@@ -57,15 +82,17 @@ export const saveStock = async (symbol) => {
  */
 export const showStocksInWatchList = async () => {
   try {
-    const data = await fs.readFile("db.json", "utf-8");
+    const data = await fs.readFile(DB_PATH, ENCODING);
     const watchlist = JSON.parse(data || "[]");
     console.log("Stocks in watchlist:");
     console.log(watchlist);
 
-    for (const symbol of watchlist) {
-      const stock = await getStockInformation(symbol);
-      console.log(stock);
-    }
+    const stocks = await Promise.all(
+      watchlist.map(async (symbol) => {
+        return await getStockInformation(symbol);
+      })
+    );
+    console.table(stocks);
   } catch (error) {
     console.error(`Error showing stocks in watchlist: ${error.message}`);
   }
@@ -77,7 +104,7 @@ export const showStocksInWatchList = async () => {
  */
 export const cleanWatchList = async () => {
   try {
-    await fs.writeFile("db.json", "[]");
+    await fs.writeFile(DB_PATH, "[]");
     console.log("Watchlist cleaned");
   } catch (error) {
     console.error(`Error cleaning watchlist: ${error.message}`);

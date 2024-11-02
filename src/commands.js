@@ -4,11 +4,15 @@ import { hideBin } from "yargs/helpers";
 import {
   getStockInformation,
   saveStock,
+  removeStock,
   showStocksInWatchList,
   cleanWatchList,
 } from "./api.js";
 
 yargs(hideBin(process.argv))
+  .usage(
+    "fm (financial markets):  A CLI tool to get stock or markets information from the terminal."
+  )
   .command(
     "stock <symbol>",
     "Get stock price",
@@ -27,21 +31,33 @@ yargs(hideBin(process.argv))
     async (argv) => {
       const symbol = argv?.symbol.toUpperCase();
       const save = argv?.save;
-      console.log(`Getting stock price for [${symbol}]`);
+      const remove = argv?.remove;
 
-      const stock = await getStockInformation(symbol);
+      if (remove) {
+        await removeStock(symbol);
+        console.log(`Removed stock ${symbol} from watchlist`);
+        return;
+      }
 
       if (save) {
         await saveStock(symbol);
+        console.log(`Saved stock ${symbol} to watchlist`);
       }
 
-      console.log(stock);
+      const stock = await getStockInformation(symbol);
+
+      console.table([stock]);
     }
   )
   .option("save", {
     alias: "s",
     type: "boolean",
     description: "Save stock to watchlist",
+  })
+  .option("remove", {
+    alias: "r",
+    type: "boolean",
+    description: "Remove stock from the watchlist",
   })
   .command(
     "show",
@@ -66,4 +82,6 @@ yargs(hideBin(process.argv))
     await cleanWatchList();
   })
   .demandCommand(1)
+
+  .epilog("Stock CLI - 2024")
   .parse();
