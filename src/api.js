@@ -1,12 +1,12 @@
 import yahooFinance from "yahoo-finance2";
-import fs from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 yahooFinance.setGlobalConfig({
   logger: {
     info: (...args) => {},
-    warn: (...args) => console.error(...args),
-    error: (...args) => console.error(...args),
-    debug: (...args) => console.log(...args),
+    warn: (...args) => {},
+    error: (...args) => {},
+    debug: (...args) => {},
   },
 });
 
@@ -42,14 +42,14 @@ export const getStockInformation = async (symbol) => {
  */
 export const saveStock = async (symbol) => {
   try {
-    const data = await fs.readFile(DB_PATH, ENCODING);
+    const data = await readFile(DB_PATH, ENCODING);
     const watchlist = JSON.parse(data || "[]");
 
     if (!watchlist.includes(symbol)) {
       watchlist.push(symbol);
     }
 
-    await fs.writeFile(DB_PATH, JSON.stringify(watchlist));
+    await writeFile(DB_PATH, JSON.stringify(watchlist));
   } catch (error) {
     console.error(`Error saving stock to watchlist: ${error.message}`);
   }
@@ -62,7 +62,7 @@ export const saveStock = async (symbol) => {
  */
 export const removeStock = async (symbol) => {
   try {
-    const data = await fs.readFile(DB_PATH, ENCODING);
+    const data = await readFile(DB_PATH, ENCODING);
     const watchlist = JSON.parse(data || "[]");
 
     const index = watchlist.indexOf(symbol);
@@ -70,7 +70,7 @@ export const removeStock = async (symbol) => {
       watchlist.splice(index, 1);
     }
 
-    await fs.writeFile(DB_PATH, JSON.stringify(watchlist));
+    await writeFile(DB_PATH, JSON.stringify(watchlist));
   } catch (error) {
     console.error(`Error removing stock from watchlist: ${error.message}`);
   }
@@ -82,7 +82,7 @@ export const removeStock = async (symbol) => {
  */
 export const showStocksInWatchList = async () => {
   try {
-    const data = await fs.readFile(DB_PATH, ENCODING);
+    const data = await readFile(DB_PATH, ENCODING);
     const watchlist = JSON.parse(data || "[]");
     console.log("Stocks in watchlist:");
     console.log(watchlist);
@@ -104,7 +104,7 @@ export const showStocksInWatchList = async () => {
  */
 export const cleanWatchList = async () => {
   try {
-    await fs.writeFile(DB_PATH, "[]");
+    await writeFile(DB_PATH, "[]");
     console.log("Watchlist cleaned");
   } catch (error) {
     console.error(`Error cleaning watchlist: ${error.message}`);

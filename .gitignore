@@ -32,3 +32,6 @@ node_modules/
 .vscode/
 .idea/
 .DS_Store
+
+# Testing with jest
+coverage/
